@@ -54,13 +54,15 @@ extern double OPT_mu;
 extern double OPT_sigma;
 extern string OPT_cempath;
 extern string OPT_samtoolspath;
-extern bool OPT_output_all
+extern bool OPT_output_all;
 
-static const char *short_options = "b:r:o:p:c:h:m:v";
+static const char *short_options = "b:r:o:p:c:h:m";
 
 #define OPT_CEMPATH 301
 #define OPT_SAMPATH 302
 #define OPT_OUTPUT_ALL 303
+#define OPT_MEAN 304
+#define OPT_STDVAR 305
 
 
 static struct option long_options[] = {
@@ -70,8 +72,8 @@ static struct option long_options[] = {
   {"readtype",            required_argument,      0,      'r'},
   {"threads",             required_argument,      0,      'p'},
   {"conf",                required_argument,      0,      'c'},
-  {"mean",                required_argument,      0,      'm'},
-  {"stdvar",                required_argument,      0,      'v'},
+  {"mean",                required_argument,      0,      OPT_MEAN},
+  {"stdvar",                required_argument,      0,      OPT_STDVAR},
   {"cempath",                required_argument,      0,      OPT_CEMPATH},
   {"sampath",                required_argument,      0,      OPT_SAMPATH},
   {"outputall",                no_argument,            0,      OPT_OUTPUT_ALL},

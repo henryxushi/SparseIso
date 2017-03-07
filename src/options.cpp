@@ -63,11 +63,14 @@ int Options::parse_options(int argc, char* argv[]) {
     case 'c':
       OPT_conf = atof(optarg);
       break;
-    case 'm':
+    case OPT_MEAN:
       OPT_mu = atof(optarg);
+      //cout << "mhere" << endl;
       break;
-    case 'v':
+    case OPT_STDVAR:
+      //cout << "temp: " << optarg << endl;
       OPT_sigma = atof(optarg);
+      //cout << "vhere" << endl;
       break;
     case OPT_CEMPATH:
       OPT_cempath = optarg;
@@ -168,9 +171,9 @@ string Options::usage () {
     << " ** Optional :" << std::endl
     << " --threads/-p <int>        " << ": the number of threads to be used, default: 1." << std::endl
     << " --outputall               " << ": output all isoforms enumberated from the graph." << std::endl
-    << " --conf/-c <double>        " << ": the confidence level for isoform identification, default: 0.5." << std::endl
-    << " --mean/-m <double>        " << ": the mean of fragment length distribution, default: 200." << std::endl
-    << " --stdvar/-v <double>      " << ": the variance of fragment length distribution, default: 20." << std::endl
+    << " --conf/-c    <double>     " << ": the confidence level for isoform identification, default: 0.5." << std::endl
+    << " --mean       <double>     " << ": the mean of fragment length distribution, default: 200." << std::endl
+    << " --stdvar     <double>     " << ": the variance of fragment length distribution, default: 20." << std::endl
     << " --help/-h                 " << ": display the help information."<< std::endl
     << std::endl;
     

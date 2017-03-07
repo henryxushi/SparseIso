@@ -28,7 +28,7 @@ void Instance::process_inst(Info& info)
 	//cout << "Finish clearing info" << endl;
 	if (maxExonCov > -1) //modified 06/15/2015, let low FPKM pass, filter in analysis part
 	{
-		int output = 0;
+		int output = 1;
 		remove_low(); //modified 06/15/2015 rely on prunning to remove false segments
 
 		vector<double> proc_abun;
@@ -248,11 +248,11 @@ void Instance::process_inst_se(Info& info)
 	//cout << "Finish clearing info" << endl;
 	if (maxExonCov > -1) 
 	{
-		int output = 0;
+		int output = 1;
 		//ofstream outfile1;
 		//outfile1.open(outputfile.c_str(),std::ios_base::app);
-		//remove_low();
-
+		remove_low();
+		
 		vector<double> proc_abun;
 		vector<double> proc_R;
 		vector<double> proc_L;
@@ -260,11 +260,7 @@ void Instance::process_inst_se(Info& info)
 		findcontain(iscontained);
 		//outfile1 << "Instance\t" << location << endl;
 		info.label = location;
-		//outfile1 << "ExonBound\t" << exonbound.size() << endl;
-		//for (int i = 0; i < exonbound.size(); i++)
-		//{
-		//	outfile1 << exonbound[i][0] << "\t" << exonbound[i][1] << endl;
-		//}
+
 		info.modexonbound(exonbound);
 		
 		double th1 = 0;
@@ -418,7 +414,7 @@ void Instance::process_inst_se(Info& info)
 				info.modL(proc_L);
 				//outfile1 << "Abundance" << endl;
 				//for (int i = 0; i < proc_abun.size(); i++)
-				//	outfile1 << proc_abun[i] << "\t" << proc_R[i] << "\t" << proc_L[i] << endl;
+					//cout << proc_abun[i] << "\t" << proc_R[i] << "\t" << proc_L[i] << endl;
 
 				//outfile1 << "Paths" << endl;
 				vector<vector<int> > segpath_all;
@@ -440,8 +436,9 @@ void Instance::process_inst_se(Info& info)
 					info.valid = false;
 				else
 				{
+					info.valid = true;
 					info.modX(segpath_all);
-					info.modX_exon(paths);
+					info.modX_exon(paths1);
 				}
 			}
 			
@@ -708,7 +705,7 @@ void Instance::correct_y(vector<vector<int> > &paths, Info &info)
 
 	//outfile << "Paths" << endl;
 	//for (int i = 0; i < new_paths.size(); i++)
-	//{
+	//{bool select = final_z[ii] >= 0.5 and s_beta(ii) > 0.02 and s_reads(ii) > 12;
 		
 		//for (int j = 0; j < paths[i].size(); j++)
 			//outfile << paths[i][j] << " ";
@@ -992,13 +989,22 @@ int Instance::enumerate_path(map<int,set<int> > &exonmap, int not_source_list[],
 		stack.pop_back();
 		if (seg1.node == goal)
 		{
-			if (seg1.visited.size() > 3) // path with seg larger than 1
+			if (countpath > 0)
+			{
+				if (seg1.visited.size() > 3) // path with seg larger than 1
+				{
+					paths.push_back(seg1.visited);
+					//mod_X(seg1.visited, SegConf, NumofSegs, NumofExon, outfile);
+					countpath++;
+					//path_all.push_back(seg1.visited);
+				}
+			}
+			else
 			{
 				paths.push_back(seg1.visited);
-				//mod_X(seg1.visited, SegConf, NumofSegs, NumofExon, outfile);
 				countpath++;
-				//path_all.push_back(seg1.visited);
 			}
+
 		}
 		else
 		{
@@ -1040,6 +1046,25 @@ int Instance::enumerate_path(map<int,set<int> > &exonmap, int not_source_list[],
 		}
 		paths.clear();
 		vector<vector<int> >().swap(paths);	*/
+		vector<vector<int> > paths_temp;
+		int count_singleexon = 0;
+		if (paths.size()>1)
+		{
+			//remove single ones
+			for (int i = 0; i < paths.size(); i++)
+			{
+				if (paths[i].size()>3)
+					paths_temp.push_back(paths[i]);
+				else
+					count_singleexon++;
+			}
+			if (count_singleexon>0)
+			{
+				paths.clear();
+				paths = paths_temp;
+			}
+
+		}
 		return 0;
 	}
 	else

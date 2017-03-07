@@ -17,7 +17,7 @@ public:
 	};
 	Options opt;
 	vector<Info> infolist;
-	void readInstance_p(string inputfile);
+	void readinstance_se(string inputfile);
 	void readinstance_p(string inputfile, double frag_mu, double frag_sigma);
 	void getInfoList(vector<Info>& outinfolist);
 	int totalNumofPaths;

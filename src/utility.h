@@ -9,7 +9,7 @@
 using namespace std;
 
 const int MAX_NUM_GENE = 100000;
-const int MAX_NUM_PATH = 100;
+const int MAX_NUM_PATH = 20;
 const double MAX_INTRON_COV = 0.95;
 
 struct Seg

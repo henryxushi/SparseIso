@@ -25,24 +25,25 @@ void Info::run()
 {
 	//cout << "Start sampling" << endl;
 	int N = X.rows();
-	assert(N > 0);
+	//assert(N > 0);
 	int M = X.cols();
 
 	//cout << X << endl;
+	//cout << y << endl;
 	//cout << "---------------------------" << endl;
-	if (M > 1)
+	if (M > 1 and N > 1)
 	{
 		bool verbose = true;
 		preprocess();
 		N = X.rows();
 		M = X.cols();
-		if (infoidx == 5 and true)
+		if (true)
 		{
-			cout << "----------y----------" << endl;
+			/*cout << "----------y----------" << endl;
 			cout << y << endl;
 			cout << "----------X----------" << endl;
 			cout << X << endl;
-			cout << "---------------------" << endl;
+			cout << "---------------------" << endl;*/
 		}
 		//cout << "Finish preprocessing " << endl;
 		double v0 = pow(10,-6);
@@ -75,7 +76,7 @@ void Info::run()
 		}
 		
 		//s_gamma = s_z.array() * s_tau.array(); 
-		double s_sigma2 = 1;
+		double s_sigma2 = 1e-5;
 		double s_w = niso / M;
 		vector<VectorXd > samples_beta(iter,VectorXd(M));
 		vector<VectorXd > samples_z(iter,VectorXd(M));
@@ -99,11 +100,11 @@ void Info::run()
 			for (int k = 0; k < M; k++)
 				diag_v[k] = s_sigma2/s_gamma(k);
 			diag(diag_v,diag_gamma);
-			if (infoidx == 5 and verbose)
+			/*if (infoidx == 5 and verbose)
 			{	
 				cout << "----------diag_gamma----------" << endl;
 				cout << diag_gamma << endl;
-			}
+			}*/
 			//cout << "Finish_1 " << i << endl;
 			//matSum(XTX,diag_gamma,A);
 			A = XTX + diag_gamma;
@@ -116,7 +117,7 @@ void Info::run()
 
 			MatrixXd invsigma_beta = 1/s_sigma2 * A;
 			
-			if (infoidx == 5 and verbose)
+			/*if (infoidx == 5 and verbose)
 			{	
 				cout << "----------XTX----------" << endl;
 				cout << XTX << endl;
@@ -130,22 +131,22 @@ void Info::run()
 				cout << mu_beta << endl;
 				cout << "----------invsigma_beta----------" << endl;
 				cout << invsigma_beta << endl;
-			}
+			}*/
 			vector<int> beta_idx(M,0);
 			for (int k = 0; k < M; k++)
 				beta_idx[k] = k;
 			//random_shuffle(beta_idx.begin(),beta_idx.end());
-			double p = 0.02;
+			double p = 0;
 			for (int k = 0; k < 10; k++)
 			{
 				//cout << "trnormrnd\n";
 				for (int ii = 0; ii < M; ii++)
 				{
-					if (k == 0 and infoidx == 5 and verbose)
+					/*if (k == 0 and infoidx == 5 and verbose)
 					{
 						cout << "s_beta " << s_beta << endl;
 						cout << "---------------------" << endl;
-					}
+					}*/
 					int idx = beta_idx[ii];
 					//idx = ii;
 					VectorXd s_betatemp = s_beta;
@@ -159,7 +160,7 @@ void Info::run()
 					double ui = mu_beta(idx) + vi2 * btemp.dot(ctemp);
 					double mu_th = get_muth(p, idx, s_beta);
 					//sample truncated normal distribution
-					if (k == 0 and infoidx == 5 and verbose)
+					/*if (k == 0 and infoidx == 5 and verbose)
 					{
 						cout << "mu_beta(idx) " << mu_beta(idx) << endl;
 						cout << "---------------------" << endl;
@@ -168,7 +169,7 @@ void Info::run()
 						cout << ctemp << endl;
 						cout << "---------------------" << endl;
 						cout << "s_beta(idx) " << s_beta(idx) << " mu: " << ui << " vi2: " << vi2 << " muth: " << mu_th << endl;
-					}			
+					}*/			
 					double betai = sample.trnormrnd(s_beta(idx),ui,vi2,mu_th);
 					s_beta(idx) = betai;
 				}
@@ -183,7 +184,7 @@ void Info::run()
 			MatrixXf p_all(M,2);
 			for (int m = 0; m < M; m++)
 			{
-				if (s_beta(m) > pow(10,-3))
+				if (s_beta(m) > pow(10,-4))
 				{
 					//double s_p0 = log(1-s_w) + log(normcdf(s_beta[m],0,sqrt(v0*s_tau[m])) - normcdf(s_beta[m]-pow(10,-3),0,sqrt(v0*s_tau[m])));
 					//double s_p1 = log(s_w) + log(normcdf(s_beta[m],0,sqrt(s_tau[m])) - normcdf(s_beta[m]-pow(10,-3),0,sqrt(s_tau[m])));
@@ -224,12 +225,15 @@ void Info::run()
 			
 			//cout << "Finish z sampling calculation " << i << endl;
 
-			s_sigma2 = 1e-3; // implement sigma sampling later
+			s_sigma2 = 1e-5; // implement sigma sampling later
 	
 			for (int m = 0; m < M; m++)
 			{
 				//cout << "beta: " << s_beta(m) << " " << s_z(m) << endl;
-				s_tau(m) = sample.invgamrnd(a1+0.5,a2+pow(s_beta(m),2)/2/s_z(m));
+				double sampled_tau = sample.invgamrnd(a1+0.5,a2+pow(s_beta(m),2)/2/s_z(m));
+				if (sampled_tau > 10)
+					sampled_tau = 10;
+				s_tau(m) = sampled_tau;
 				s_gamma(m) = s_tau(m) * s_z(m);
 			}
 
@@ -241,7 +245,7 @@ void Info::run()
 			}
 			//cout << "Adding new isoforms" << endl;
 			vector<int> new_idx1;
-			if (infoidx == 5 and 1)
+			/*if (infoidx == 5 and 1)
 			{
 				cout << "=====================" << endl;
 				
@@ -254,7 +258,7 @@ void Info::run()
 				cout << "----------z----------" << endl;
 				cout << s_z << endl;
 				cout << "--------------------" << endl;
-			}
+			}*/
 			
 			getIsoIdxForX(current_idx1,new_idx1);
 			for (int m = 0; m < new_idx1.size(); m++)
@@ -263,14 +267,14 @@ void Info::run()
 				s_tau(new_idx1[m]) = 0.5;
 				s_gamma(new_idx1[m]) = 0.5;
 			}
-			if (infoidx == 5 and 1)
+			/*if (infoidx == 5 and 1)
 			{
 				cout << "----------zmod----------" << endl;
 				cout << s_z << endl;
 				cout << "=====================" << endl;
 				//int aa;
 				//cin >> aa;
-			}
+			}*/
 			//cout << "Finish adding new isoforms" << endl;
 			samples_z[i] = s_z;
 			//s_w = 1e-3; // implement sigma sampling later
@@ -321,7 +325,8 @@ void Info::run()
 		calFPKM(final_beta_v,FPKM,s_reads);
 		for (int ii = 0; ii < FPKM.size(); ii++)
 		{
-			bool select = final_z[ii] >= 0.5 and s_beta(ii) > 0.02 and s_reads(ii) > 12;
+			bool select = final_z[ii] >= 0.5 and s_reads(ii) > 12;
+			//bool select = final_z[ii] >= 0.5 and s_beta(ii) > 0.02 and s_reads(ii) > 12;
 			//bool select = final_z[ii] >= 0.5;
 			if (select)
 				final_isoidx.push_back(1);
@@ -329,7 +334,7 @@ void Info::run()
 				final_isoidx.push_back(0);
 			final_FPKM.push_back(FPKM(ii));
 		}
-
+		/*
 		cout << "----------------" << endl;
 		cout << "final_z:" << endl;
 		//cout << X << endl;
@@ -337,6 +342,7 @@ void Info::run()
 		cout << "----------------" << endl;
 		cout << "final_beta:" << endl;
 		print_v(final_beta);
+		*/
 		//int aa;
 		//cin >> aa;
 	}
@@ -674,7 +680,7 @@ void Info::calFPKM(VectorXd s_beta, VectorXd &FPKM, VectorXd &s_reads)
 	FPKM = s_reads.array() / transL.array() * pow(10,9) / totalReads;
 }
 
-void Info::write(string outdir, int gene_idx)
+void Info::write(string outdir, int gene_idx, bool output_all_bool)
 {
 	stringstream output_all, output;
 	output << outdir << "/SparseIso.gtf";
@@ -691,14 +697,16 @@ void Info::write(string outdir, int gene_idx)
 	if (gene_idx == 1)
 	{
 		outfile = fopen(output_str.c_str(),"w");
-		outfile_all = fopen(output_all_str.c_str(),"w");
+		if (output_all_bool)
+			outfile_all = fopen(output_all_str.c_str(),"w");
 	}
 	else
 	{
 		outfile = fopen(output_str.c_str(),"a+");
-		outfile_all = fopen(output_all_str.c_str(),"a+");
+		if (output_all_bool)
+			outfile_all = fopen(output_all_str.c_str(),"a+");
 	}
-	if (single)
+	if (false) // or single
 	{
 
 	}
@@ -723,18 +731,29 @@ void Info::write(string outdir, int gene_idx)
 			set<set<int> >::iterator it = exon_region.begin();
 			set<int>::iterator iti = it->begin();
 			int e_start = *iti;
-			it = exon_region.begin();
-			std::advance(it,1);
+			it = exon_region.end();
+			std::advance(it,-1);
 			iti = it->begin();
 			std::advance(iti,1);
 			int e_end = *iti;
 			stringstream trans_stream;
 			trans_stream << outgene << "." << i;
 			string outtrans = trans_stream.str();
-
-			fprintf(outfile_all, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
+			/*if (output_all_bool)
+				fprintf(outfile_all, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
 			if (final_isoidx[i] == 1)
 				fprintf(outfile, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
+			*/
+			bool writevalid = true;
+			if (exon_region.size()==1)
+				if (final_FPKM[i] < 5)
+					writevalid = false;
+
+			if (output_all_bool)
+				fprintf(outfile_all, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\"; \n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i]);
+			if (final_isoidx[i] == 1 and writevalid)
+				fprintf(outfile, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\";\n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i]);
+
 
 			//cout << "check 3" << endl;
 			int exonNum = 1;
@@ -745,9 +764,15 @@ void Info::write(string outdir, int gene_idx)
 				iti = it->begin();
 				std::advance(iti,1);
 				int exon_end = *iti;
-				fprintf(outfile_all, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
+				/*if (output_all_bool)
+					fprintf(outfile_all, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
 				if (final_isoidx[i] == 1)
 					fprintf(outfile, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
+				*/
+				if (output_all_bool)
+					fprintf(outfile_all, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i]);
+				if (final_isoidx[i] == 1 and writevalid)
+					fprintf(outfile, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i]);
 
 				exonNum++;
 			}
@@ -755,7 +780,8 @@ void Info::write(string outdir, int gene_idx)
 			//fprintf(outfile_all, '%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id "%s"; transcript_id "%s"; FPKM "%.6f"; frac "%.6f"; conf_lo "900"; conf_hi "1100"; cov "20";\n',chr.c_str(), e_start, e_end, strand.c_str(); ,outgene, outtrans, FPKM_temp(idx_ident(j)), frac_temp(idx_ident(j)));
 		}
 	}
-	fclose(outfile_all);
+	if (output_all_bool)
+		fclose(outfile_all);
 	fclose(outfile);
 }
 
@@ -870,12 +896,15 @@ void Info::run_single()
 	{
 		output_bool = true;
 		final_FPKM.push_back(reads / length * pow(10,9) / totalReads);
-		final_isoidx.push_back(0);
+		final_isoidx.push_back(1);
 		beta_frac_low_high = MatrixXd::Zero(1,2);
 		beta_frac_low_high(0,0) = 0.5;
 		beta_frac_low_high(0,1) = 1.5;
 	}
 	else
+	{
 		output_bool = false;
+		final_isoidx.push_back(0);
+	}
 
 }
