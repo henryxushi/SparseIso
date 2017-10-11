@@ -101,11 +101,11 @@ void filter_bam(string bamfile, string outdir, string &outbamfile)
                 }
 
                 if ((current_position != current_alignment.Position) or (cur_reference != current_alignment.RefID)) {
-                    //cout << current_alignment.Name << endl;
+
                     num_reads_paired += read_pairs.size();         
 
                     addUniqueReads(&unique_reads, &read_pairs);
-                    //cout << "adding reads " << unique_reads.size() << " " << unique_reads.empty() << endl;
+                    cout << "adding reads " << unique_reads.size() << " " << unique_reads.empty() << endl;
                     nd_nm_mapped_paired_end_reads += writeUniqueReads(&unstranded_writer, &unique_reads, &first_reads);
 
                     if (cur_reference != current_alignment.RefID) {
@@ -134,9 +134,9 @@ void filter_bam(string bamfile, string outdir, string &outbamfile)
 }
 
 void addUniqueReads(UniqueReads * unique_reads, ReadPairs * read_pairs) {
-    //cout << "try to add" << endl;
+
     for (ReadPairs::iterator it = read_pairs->begin(); it != read_pairs->end(); it++) {
-        //cout << "add " << it->second.first->Name << endl;
+
         unique_reads->insert(unique_reads->end(), pair<uint, BamTools::BamAlignment*>(it->second.first->Position, it->second.first));
         unique_reads->insert(unique_reads->end(), pair<uint, BamTools::BamAlignment*>(it->second.second->Position, it->second.second));
     }
@@ -194,7 +194,7 @@ string generateCigarString(vector<BamTools::CigarOp> & cigar_data) {
 
 
 double writeUniqueReads(BamTools::BamWriter * writer, UniqueReads * unique_reads, FirstReads * first_reads) {
-	//cout << "writing" << endl;
+	cout << "writing" << endl;
     double nd_nm_pe_reads = 0;
 
     uint cur_nh_tag;
@@ -213,12 +213,12 @@ double writeUniqueReads(BamTools::BamWriter * writer, UniqueReads * unique_reads
         left_most_position = first_reads->begin()->first;
     }
     
-    //cout << uit->first << " " << left_most_position << " " << unique_reads->size() << endl;
-    //int aa;
-    //cin >> aa;
+    cout << uit->first << " " << left_most_position << " " << unique_reads->size() << endl;
+    int aa;
+    cin >> aa;
     //while (uit->first < left_most_position and !unique_reads->empty()) {
     while (!unique_reads->empty()) {
-		//cout << "writing line" << endl;
+		cout << "writing line" << endl;
         cur_hi_tag = 0;
         uint8_t test_int;
         assert(uit->second->GetTag("NH", test_int));

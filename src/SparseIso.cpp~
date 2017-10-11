@@ -71,13 +71,6 @@ int main(int argc, char* argv[])
 		cout << "Input paired-end data" << endl;
 		cout << "Filtering bam file..." << endl;
 		filter_bam(opt.bamfile,opt.outdir,outbamfile);
-		stringstream outbamfilesorteds;
-		outbamfilesorteds << "samtools sort " << outbamfile << " " << outbamfile <<".sorted";
-		assert(system(outbamfilesorteds.str().c_str())==0);
-		stringstream outbamfilesorted_str;
-		outbamfilesorted_str << outbamfile << ".sorted.bam";
-		string outbamfilesorted = outbamfilesorted_str.str();
-		outbamfile = outbamfilesorted;
 	}
 	else
 		cout << "Input single-end data" << endl;
@@ -126,7 +119,44 @@ int main(int argc, char* argv[])
 		assert(system(instance_stream.str().c_str())==0);
 	outinstance_stream << ".instance";
 	string outinstance = outinstance_stream.str();
-	
+	//assert(system(instance_stream.str().c_str()) == 0);
+
+	//estimate fragment length distribution and estimate bias
+	//we need first read the instance file then we can get the fragment length and bias
+	//because we need to get the genes with single isoform
+	/*vector<double> bias(100,1);
+	//read bias from ground truth
+	string biasfile = "/media/73a039e0-7805-4ca6-90d0-b63ed265dcfe/Henry/RNA-seq/SparseIso_sim/RNASeqReadSimulator-master/demo/input/sampleposbias1.txt";
+	ifstream biasreader;
+	biasreader.open(biasfile.c_str());
+	string line;
+	int biasidx = 0;
+	if (biasreader.is_open())
+	{
+		while (biasreader.good())
+		{
+			getline(biasreader,line);
+			if (!line.empty())
+			{
+				bias[biasidx++] = atof(line.c_str());
+			}
+		}
+	}*/
+
+
+	//get info list in read instance class
+
+	/*string filename1 = argv[1];
+	string outputfile = argv[2];
+	double frag_mu = atof(argv[3]);
+	double frag_sigma = atof(argv[4]);
+	string readtype = argv[5];
+	string Numcores = argv[7];
+
+	Options opt;
+	opt.readtype = readtype;
+	opt.outdir = argv[6];
+	opt.N_cores = atoi(Numcores.c_str());*/
 	if (opt.N_cores > 1)
 		cout << "Multi_core enabled " << endl;
 
