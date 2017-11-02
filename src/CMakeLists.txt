@@ -4,21 +4,12 @@ project(SparseIso)
 set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-<<<<<<< HEAD
 set(SPARSEISO_DIR /home/cbil/Henry/RNA-seq/Assembly/SparseIso_package/SparseIso-github-V1.1)
 set(BOOST_LIB_DIR /usr/local/lib)
 set(BOOST_INCLUDE_DIR /usr/local/include)
 set(BAMTOOLS_LIB_DIR /home/cbil/Henry/bamtools/lib)
 set(BAMTOOLS_INCLUDE_DIR /home/cbil/Henry/bamtools/include)
 set(EIGEN_INCLUDE_DIR /home/cbil/Downloads/eigen-eigen-bdd17ee3b1b3)
-=======
-set(SPARSEISO_DIR /home/henry/Henry/SparseIso-master-cmake)
-set(BOOST_LIB_DIR /usr/local/lib)
-set(BOOST_INCLUDE_DIR /usr/local/include)
-set(BAMTOOLS_LIB_DIR /home/henry/Henry/bamtools/lib)
-set(BAMTOOLS_INCLUDE_DIR /home/henry/Henry/bamtools/include)
-set(EIGEN_INCLUDE_DIR /home/henry/Henry/eigen-eigen-67e894c6cd8f)
->>>>>>> origin/master
 
 include_directories(. ${BOOST_INCLUDE_DIR} ${BAMTOOLS_INCLUDE_DIR} ${EIGEN_INCLUDE_DIR} ${SPARSEISO_DIR})
 link_directories(${BOOST_LIB_DIR} ${BAMTOOLS_LIB_DIR})
