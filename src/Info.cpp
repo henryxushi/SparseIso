@@ -822,6 +822,7 @@ void connect_region_recur(set<set<int> > region_in, set<set<int> >& region_out)
 
 void connect_region(set<set<int> > region_in, set<set<int> >& region_out)
 {
+	region_out.clear();
 	int count = 1, jump = 0;
 	vector<set<int> > region_in_v;
 	for (set<set<int> >::iterator it = region_in.begin(); it != region_in.end(); it++)
