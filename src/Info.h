@@ -54,7 +54,7 @@ public:
 	void getIsoIdxForX(vector<int> &current_idx, vector<int> &new_idx); //choose the isoform to explain all reads
 	void calFPKM(VectorXd s_beta, VectorXd& FPKM, VectorXd& s_reads);
 	void write(string outdir, int idx, bool output_all_bool);
-	void getExonRegion(int isoidx, set<set<int> >& exon_region); //get the exon boundaries for isoform isoidx
+	void getExonRegion(int isoidx, set<vector<int> >& exon_region); //get the exon boundaries for isoform isoidx
 	double get_muth(double p, int idx, VectorXd s_beta);
 	bool output_bool;
 	bool valid;
