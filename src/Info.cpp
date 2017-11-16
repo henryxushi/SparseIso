@@ -17,8 +17,8 @@ bool vector_matchX(MatrixXd X, int a, int b);
 void vectorcp(vector<double> &a, vector<double> &b); // cp a to b
 void matcp(vector<vector<double> > &a, vector<vector<double> > &b);
 void vectorcptoMat(vector<vector<double> > &a, MatrixXd &b);
-void connect_region_recur(set<set<int> > region_in, set<set<int> >& region_out);
-void connect_region(set<set<int> > region_in, set<set<int> >& region_out);
+void connect_region_recur(set<vector<int> > region_in, set<vector<int> >& region_out);
+void connect_region(set<vector<int> > region_in, set<vector<int> >& region_out);
 
 
 void Info::run()
@@ -724,20 +724,20 @@ void Info::write(string outdir, int gene_idx, bool output_all_bool)
 		{
 			//cout << "final_isoidx.size(): " << final_isoidx.size() << " X: " << X.cols() << endl;
 
-			set<set<int> > exon_region;
+			set<vector<int> > exon_region;
 			//cout << "check 1" << endl;
 			getExonRegion(i,exon_region);
 			//cout << "check 2" << endl;
-			set<set<int> >::iterator it = exon_region.begin();
-			set<int>::iterator iti = it->begin();
-			int e_start = *iti;
-			it = exon_region.end();
-			std::advance(it,-1);
-			iti = it->begin();
-			std::advance(iti,1);
-			int e_end = *iti;
+			set<vector<int> >::iterator it = exon_region.begin();
+			int e_start = (*it)[0];
+			it = exon_region.begin();
+			for (int ii = 0; ii < exon_region.size()-1; ii++)
+				std::advance(it,1);
+			
+			int e_end = (*it)[1];
+
 			stringstream trans_stream;
-			trans_stream << outgene << "." << i;
+			trans_stream << outgene << "." << i+1;
 			string outtrans = trans_stream.str();
 			/*if (output_all_bool)
 				fprintf(outfile_all, "%s\tSparseIso\ttranscript\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), e_start, e_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
@@ -759,11 +759,8 @@ void Info::write(string outdir, int gene_idx, bool output_all_bool)
 			int exonNum = 1;
 			for (it = exon_region.begin(); it != exon_region.end(); it++)
 			{
-				iti = it->begin();
-				int exon_start = *iti;
-				iti = it->begin();
-				std::advance(iti,1);
-				int exon_end = *iti;
+				int exon_start = (*it)[0];
+				int exon_end = (*it)[1];
 				/*if (output_all_bool)
 					fprintf(outfile_all, "%s\tSparseIso\texon\t%d\t%d\t1000\t%s\t.\tgene_id \"%s\"; transcript_id \"%s\"; exon_number \"%d\"; FPKM \"%.6f\"; frac \"%.6f\"; conf_lo \"%.6f\"; conf_hi \"%.6f\"; cov \"20\";\n",chr.c_str(), exon_start, exon_end, strand.c_str() ,outgene.c_str(), outtrans.c_str(), exonNum, final_FPKM[i], 1.0, final_FPKM[i] * beta_frac_low_high(i,0), final_FPKM[i] * beta_frac_low_high(i,1));
 				if (final_isoidx[i] == 1)
@@ -785,18 +782,18 @@ void Info::write(string outdir, int gene_idx, bool output_all_bool)
 	fclose(outfile);
 }
 
-void Info::getExonRegion(int isoidx, set<set<int> >& exon_region)
+void Info::getExonRegion(int isoidx, set<vector<int> >& exon_region)
 {
-	set<set<int> > exon_temp;
+	set<vector<int> > exon_temp;
 	//cout << "check 1.1" << endl;
 	for (int i = 0; i < X_exon.rows(); i++)
 	{
 		//cout << "i: " << i << " " << X_exon.rows() << " isoidx: " << isoidx << " " << X_exon.cols() << endl;
 		if (X_exon(i,isoidx) > 0)
 		{
-			set<int> s_exon_temp;
-			s_exon_temp.insert(exonbound[i][0]);
-			s_exon_temp.insert(exonbound[i][1]);
+			vector<int> s_exon_temp;
+			s_exon_temp.push_back(exonbound[i][0]);
+			s_exon_temp.push_back(exonbound[i][1]);
 			exon_temp.insert(s_exon_temp);
 		}
 	}
@@ -805,12 +802,13 @@ void Info::getExonRegion(int isoidx, set<set<int> >& exon_region)
 
 }
 
-void connect_region_recur(set<set<int> > region_in, set<set<int> >& region_out)
+void connect_region_recur(set<vector<int> > region_in, set<vector<int> >& region_out)
 {
 	int quit = 0;
-	set<set<int> > temp = region_in;
+	set<vector<int> > temp = region_in;
 	while (quit == 0)
 	{
+		region_out.clear();
 		connect_region(temp,region_out);
 		if (region_out.size() == temp.size())
 			quit = 1;
@@ -820,45 +818,39 @@ void connect_region_recur(set<set<int> > region_in, set<set<int> >& region_out)
 }
 
 
-void connect_region(set<set<int> > region_in, set<set<int> >& region_out)
+void connect_region(set<vector<int> > region_in, set<vector<int> >& region_out)
 {
 	region_out.clear();
 	int count = 1, jump = 0;
-	vector<set<int> > region_in_v;
-	for (set<set<int> >::iterator it = region_in.begin(); it != region_in.end(); it++)
+	vector<vector<int> > region_in_v;
+	for (set<vector<int> >::iterator it = region_in.begin(); it != region_in.end(); it++)
 		region_in_v.push_back(*it);
-	set<int> zeros;
-	zeros.insert(0);
-	zeros.insert(0);
+	vector<int> zeros;
+	zeros.push_back(0);
+	zeros.push_back(0);
 	region_in_v.push_back(zeros);
 	for (int i = 0; i < region_in_v.size()-1; i++)
 	{
-		set<int>::iterator iti = region_in_v[i].begin();
-		std::advance(iti,1);
-		int e_end = *iti;
+		int e_end = region_in_v[i][1];
 		int e_start = 0;
 		
-		set<int>::iterator it1i = region_in_v[i+1].begin();
-		e_start = *it1i;
+		e_start = region_in_v[i+1][0];
 		
 		if (jump == 0)
 		{
 			if (e_start - e_end == 1)
 			{
-				iti = region_in_v[i].begin();
-				int temp1 = *iti;
-				std::advance(iti,1);
-				int temp2 = *iti;
-				iti = region_in_v[i+1].begin();
-				if (temp1 > *iti)
-					temp1 = *iti;
-				std::advance(iti,1);
-				if (temp2 < *iti)
-					temp2 = *iti;
+				int temp1 = region_in_v[i][0];
+				int temp2 = region_in_v[i][1];
+				
+				if (temp1 > region_in_v[i+1][0])
+					temp1 = region_in_v[i+1][0];
+				if (temp2 < region_in_v[i+1][1])
+					temp2 = region_in_v[i+1][1];
 
-				set<int> temp;
-				temp.insert(temp1);
-				temp.insert(temp2);
+				vector<int> temp;
+				temp.push_back(temp1);
+				temp.push_back(temp2);
 				region_out.insert(temp);
 				region_in_v[i+1] = temp;
 				jump = 1;
